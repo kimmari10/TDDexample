@@ -1,12 +1,18 @@
 package security;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mock;
 import org.junit.Before;
 import org.junit.Test;
 
 
-public class AuthServiceTest {
+public class AuthServiceTest { 
+
+	public interface UserRepository {
+		User findById(String id);
+	}
 
 	public class WrongPasswordException extends RuntimeException {
 
@@ -21,8 +27,15 @@ public class AuthServiceTest {
 	private static final String USER_ID = "userId";
 	private static final String USER_PASSWORD = "userPassword";
 	private AuthService authService;
+	private UserRepository mockUserRepository;
 
 	public class AuthService {
+
+		private UserRepository userRepository;
+
+		public void setUserRepository(UserRepository userRepository) {
+			this.userRepository = userRepository;
+		}
 
 		public void authenticate(String id, String password) {
 			if(id == null || id.isEmpty()) throw new IllegalArgumentException();
@@ -36,9 +49,10 @@ public class AuthServiceTest {
 		}
 
 		private User findUserById(String id) {
-			if (id.equals("userId"))
-				return new User(id, "1234");
-			return null;
+			return userRepository.findById(id);
+//			if (id.equals("userId"))
+//				return new User(id, "1234");
+//			return null;
 		}
 
 	}
@@ -51,14 +65,12 @@ public class AuthServiceTest {
 		
 	}	
 	
-	private void givenUserExists(String string, String userPassword) {
-		// TODO Auto-generated method stub
-		
+	private void givenUserExists(String id, String password) {
+		when(mockUserRepository.findById(id)).thenReturn(new User(id, password));
 	}
 
-	private void verifyUserFound(String string) {
-		// TODO Auto-generated method stub
-		
+	private void verifyUserFound(String id) {
+		verify(mockUserRepository).findById(id);
 	}
 	
 	@Test
@@ -93,8 +105,9 @@ public class AuthServiceTest {
 	
 	@Before
 	public void setUp() {
+		mockUserRepository = mock(UserRepository.class);
 		authService = new AuthService();
-		
+		authService.setUserRepository(mockUserRepository);
 	}
 	
 	
