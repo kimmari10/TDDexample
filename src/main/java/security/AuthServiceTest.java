@@ -1,14 +1,31 @@
 package security;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
+
 import org.junit.Before;
 import org.junit.Test;
 
 
 public class AuthServiceTest { 
+
+	public class Authentication {
+
+		public Authentication(Object id) {
+			// TODO Auto-generated constructor stub
+		}
+
+		public String getId() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+	}
+
+	private static final String WORNG_PASSWORD = "worngPassword";
 
 	public interface UserRepository {
 		User findById(String id);
@@ -37,7 +54,7 @@ public class AuthServiceTest {
 			this.userRepository = userRepository;
 		}
 
-		public void authenticate(String id, String password) {
+		public Authentication authenticate(String id, String password) {
 			if(id == null || id.isEmpty()) throw new IllegalArgumentException();
 			if(password == null || password.isEmpty()) throw new IllegalArgumentException();
 			
@@ -45,23 +62,30 @@ public class AuthServiceTest {
 			if(user == null)
 				throw new NonExistingUserException();
 			
-			throw new WrongPasswordException();
+			if(!user.matchPassword(password))
+				throw new WrongPasswordException();
+			
+			return new Authentication(user.getId());
 		}
 
 		private User findUserById(String id) {
 			return userRepository.findById(id);
-//			if (id.equals("userId"))
-//				return new User(id, "1234");
-//			return null;
 		}
 
 	}
 	
 	@Test
+	public void whenUserFoundAndRightPw_returnAuth() {
+		givenUserExists(USER_ID, USER_PASSWORD);
+		Authentication auth = authService.authenticate(USER_ID, USER_PASSWORD);
+		assertThat(auth.getId(), equalTo(USER_ID));
+	}
+	
+	@Test
 	public void whenUserFoundButWrongPw_throwWrongPasswordEx() {
-		givenUserExists("userId", USER_PASSWORD);
-		assertExceptionThrown("userId", "worngPassword", WrongPasswordException.class);
-		verifyUserFound("userId");
+		givenUserExists(USER_ID, USER_PASSWORD);
+		assertExceptionThrown(USER_ID, WORNG_PASSWORD, WrongPasswordException.class);
+		verifyUserFound(USER_ID);
 		
 	}	
 	

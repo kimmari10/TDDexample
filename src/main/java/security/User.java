@@ -6,4 +6,14 @@ public class User {
 		// TODO Auto-generated constructor stub
 	}
 
+	public Object getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public boolean matchPassword(String password) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
